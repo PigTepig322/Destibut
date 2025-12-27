@@ -103,3 +103,372 @@ student@ws535-14:~/Документы/git/Kazuha$
     Чтобы переключиться на другую ветку Git или создать новую ветку и начать работу в ней, используйте список веток.
 
 Мы привели варианты часто используемых действий при работе с панелью Source Control. Теперь рассмотрим другие возможности VS Code.
+
+mkdir advanced-git-lab
+cd advanced-git-lab
+git init
+
+rem Создаём сложную структуру папок
+mkdir src\frontend
+mkdir src\backend
+mkdir src\shared
+mkdir docs\api
+mkdir docs\architecture
+mkdir docs\deployment
+mkdir tests\unit
+mkdir tests\integration
+mkdir tests\e2e
+
+rem Создаём файл с типами TypeScript
+(
+echo export interface User {
+echo   id: string;
+echo   email: string;
+echo   profile: UserProfile;
+echo }
+echo.
+echo export interface UserProfile {
+echo   firstName: string;
+echo   lastName: string;
+echo   preferences: UserPreferences;
+echo }
+echo.
+echo export interface UserPreferences {
+echo   theme: 'light' ^| 'dark';
+echo   notifications: boolean;
+echo }
+) > src\shared\types.ts
+
+git add .
+git commit -m "Initial project structure with shared types"
+
+git checkout -b refactor/types-restructure
+
+(
+echo export namespace UserTypes {
+echo   export interface IUser {
+echo     uuid: string;
+echo     email: string;
+echo     profile: IUserProfile;
+echo     metadata: UserMetadata;
+echo   }
+echo.
+echo   export interface IUserProfile {
+echo     personalInfo: PersonalInformation;
+echo     settings: UserSettings;
+echo   }
+echo.
+echo   export interface PersonalInformation {
+echo     firstName: string;
+echo     lastName: string;
+echo     birthDate?: Date;
+echo   }
+echo.
+echo   export interface UserSettings {
+echo     theme: ThemeMode;
+echo     notificationSettings: NotificationConfig;
+echo   }
+echo.
+echo   export type ThemeMode = 'LIGHT' ^| 'DARK' ^| 'AUTO';
+echo.
+echo   export interface NotificationConfig {
+echo     email: boolean;
+echo     push: boolean;
+echo     sms: boolean;
+echo   }
+echo.
+echo   export interface UserMetadata {
+echo     createdAt: Date;
+echo     updatedAt: Date;
+echo     version: number;
+echo   }
+echo }
+) > src\shared\types.ts
+
+git add .
+git commit -m "Refactor: complete type system restructuring with namespaces"
+
+git checkout main
+git checkout -b feature/advanced-auth
+
+(
+echo export interface User {
+echo   id: string;
+echo   email: string;
+echo   profile: UserProfile;
+echo   auth: AuthInfo;
+echo }
+echo.
+echo export interface UserProfile {
+echo   firstName: string;
+echo   lastName: string;
+echo   preferences: UserPreferences;
+echo   security: SecuritySettings;
+echo }
+echo.
+echo export interface UserPreferences {
+echo   theme: 'light' ^| 'dark' ^| 'system';
+echo   notifications: boolean;
+echo   language: string;
+echo }
+echo.
+echo export interface AuthInfo {
+echo   roles: string[];
+echo   permissions: string[];
+echo   lastLogin: Date;
+echo   mfaEnabled: boolean;
+echo }
+echo.
+echo export interface SecuritySettings {
+echo   twoFactorAuth: boolean;
+echo   loginAlerts: boolean;
+echo   sessionTimeout: number;
+echo }
+) > src\shared\types.ts
+
+git add .
+git commit -m "Feat: add advanced authentication types and security settings"
+
+git checkout main
+git merge refactor/types-restructure
+git merge feature/advanced-auth  rem Здесь будет сложный конфликт
+
+(
+echo export namespace UserManagement {
+echo   export interface IUser {
+echo     uuid: string;
+echo     email: string;
+echo     profile: IUserProfile;
+echo     auth: AuthInfo;
+echo     metadata: UserMetadata;
+echo   }
+echo.
+echo   export interface IUserProfile {
+echo     personalInfo: PersonalInformation;
+echo     settings: UserSettings;
+echo     security: SecuritySettings;
+echo   }
+echo.
+echo   export interface PersonalInformation {
+echo     firstName: string;
+echo     lastName: string;
+echo     birthDate?: Date;
+echo   }
+echo.
+echo   export interface UserSettings {
+echo     theme: ThemeMode;
+echo     notificationSettings: NotificationConfig;
+echo     language: string;
+echo   }
+echo.
+echo   export interface AuthInfo {
+echo     roles: string[];
+echo     permissions: string[];
+echo     lastLogin: Date;
+echo     mfaEnabled: boolean;
+echo   }
+echo.
+echo   export interface SecuritySettings {
+echo     twoFactorAuth: boolean;
+echo     loginAlerts: boolean;
+echo     sessionTimeout: number;
+echo   }
+echo.
+echo   export type ThemeMode = 'LIGHT' ^| 'DARK' ^| 'AUTO';
+echo.
+echo   export interface NotificationConfig {
+echo     email: boolean;
+echo     push: boolean;
+echo     sms: boolean;
+echo   }
+echo.
+echo   export interface UserMetadata {
+echo     createdAt: Date;
+echo     updatedAt: Date;
+echo     version: number;
+echo   }
+echo }
+) > src\shared\types-resolved.ts
+
+@echo off
+rem Скрипт для создания 50 коммитов с постепенным внесением бага
+
+for /l %%i in (1,1,50) do (
+  echo // Commit %%i - Working feature > feature.js
+  
+  if %%i EQU 25 (
+    echo // BUG: Memory leak introduced here >> feature.js
+    git add feature.js
+    git commit -m "feat: add optimization (BUG INTRODUCED)"
+  ) else if %%i EQU 40 (
+    echo // Performance improvement >> feature.js
+    git add feature.js
+    git commit -m "perf: enhance performance"
+  ) else (
+    git add feature.js
+    git commit -m "chore: update feature %%i"
+  )
+)
+
+git bisect start
+git bisect bad HEAD
+git bisect good HEAD~50
+git bisect run test_bug.bat
+
+mkdir main-project
+cd main-project
+git init
+
+rem Добавляем субмодули (замените URLs на реальные)
+git submodule add https://github.com/user/shared-lib.git libs\shared
+git submodule add https://github.com/user/auth-service.git services\auth
+git submodule add https://github.com/user/ui-components.git frontend\components
+
+rem Инициализируем и обновляем все субмодули
+git submodule update --init --recursive
+
+rem Обновляем конкретный субмодуль до версии v2.0.0
+cd libs\shared
+git checkout v2.0.0
+cd ..\..
+git add libs\shared
+git commit -m "Update shared lib to v2.0.0"
+
+rem Массовое обновление всех субмодулей до последнего тега
+git submodule foreach "git checkout $(git describe --tags --abbrev=0)"
+
+@echo off
+echo Running advanced pre-commit checks...
+
+rem Проверка на наличие debug-кода
+git diff --cached --name-only | findstr /R "console\.debug debugger TODO" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo ❌ Found debug code or TODOs in staged files
+  exit /b 1
+)
+
+rem Проверка сложности функций (упрощённая версия для Windows)
+for /f %%f in ('git diff --cached --name-only') do (
+  if exist "%%f" (
+    findstr /C:"function" "%%f" | find /c /v "" > complexity.tmp
+    set /p lines=<complexity.tmp
+    if !lines! GTR 50 (
+      echo ❌ Found functions that are too complex in %%f
+      del complexity.tmp
+      exit /b 1
+    )
+  )
+)
+
+rem Проверка на медленные DOM-операции
+git diff --cached --name-only | findstr /R "innerHTML eval( document\.write" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo ❌ Found potentially slow DOM operations
+  exit /b 1
+)
+
+echo ✅ All pre-commit checks passed!
+exit /b 0
+
+@echo off
+echo Running post-merge tasks...
+
+rem Проверка миграций базы данных
+git diff HEAD@{1} HEAD --name-only | findstr /C:"database/migrations" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo 📦 Database migrations detected. Running migrations...
+  rem npm run db:migrate
+)
+
+rem Обновление зависимостей
+git diff HEAD@{1} HEAD --name-only | findstr /C:"package.json" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo 📦 Package.json changed. Installing dependencies...
+  rem npm install
+)
+
+rem Перезапуск сервисов
+git diff HEAD@{1} HEAD --name-only | findstr /C:"src/" >nul
+if %ERRORLEVEL% EQU 0 (
+  echo 🔄 Source code changed. Restarting development server...
+  rem pm2 restart app
+)
+
+git checkout -b develop
+
+git checkout -b feature/user-dashboard
+git checkout -b feature/payment-integration
+git checkout -b feature/analytics
+
+git checkout -b refactor/performance
+git checkout -b refactor/architecture
+
+git checkout -b experiment/new-ui-framework
+git checkout -b experiment/microservices
+
+git checkout feature/user-dashboard
+
+rem Имитируем долгую разработку с 10 коммитами
+for /l %%i in (1,1,10) do (
+  echo // Feature work %%i >> dashboard.js
+  git add dashboard.js
+  git commit -m "feat: dashboard progress %%i"
+  
+  rem Каждые 3 коммита обновляемся с develop
+  set /a mod=%%i %% 3
+  if !mod! EQU 0 (
+    git fetch origin
+    git rebase origin/develop
+  )
+)
+
+rem Интерактивный rebase для очистки истории
+git rebase -i HEAD~10
+
+git lfs install
+
+rem Отслеживаем большие файлы
+git lfs track "*.psd"
+git lfs track "*.ai"
+git lfs track "*.mp4"
+git lfs track "*.zip"
+git lfs track "*.pdf"
+
+rem Создаём тестовые большие файлы (нужен fsutil)
+fsutil file createnew large-asset.bin 104857600  rem 100MB
+fsutil file createnew design-resource.psd 52428800  rem 50MB
+
+git add .
+git commit -m "Add large binary assets with LFS"
+
+rem Основная работа
+git worktree add ..\hotfix-branch hotfix
+git worktree add ..\experiment-branch experiment
+git worktree add ..\docs-update docs
+
+rem Параллельная работа в разных директориях
+cd ..\hotfix-branch
+rem Исправление критического бага
+
+cd ..\experiment-branch
+rem Эксперименты с новой функциональностью
+
+cd ..\docs-update
+rem Обновление документации
+
+rem Управление worktree
+git worktree list
+git worktree remove ..\hotfix-branch
+
+@echo off
+echo 🔄 Syncing all branches...
+
+git fetch --all --prune
+
+for /f "tokens=*" %%b in ('git branch -r ^| findstr /v HEAD') do (
+  for /f "tokens=2 delims=/" %%c in ("%%b") do (
+    git branch -f %%c %%b 2>nul || echo.
+  )
+)
+
+echo ✅ All branches synced!
